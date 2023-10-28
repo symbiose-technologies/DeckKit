@@ -40,7 +40,9 @@ public struct DeckViewConfiguration: Codable, Equatable {
         verticalOffset: Double = 10,
         dragRotationFactor: Double = 0.05,
         horizontalDragThreshold: Double = 100,
-        verticalDragThreshold: Double = 250
+        verticalDragThreshold: Double = 250,
+        iMessageMediaStyle: Bool = false,
+        dragFixedHorizontally: Bool = false
     ) {
         assert(scaleOffset > 0, "scaleOffset must be positive")
         assert(verticalOffset > 0, "verticalOffset must be positive")
@@ -52,6 +54,8 @@ public struct DeckViewConfiguration: Codable, Equatable {
         self.dragRotationFactor = dragRotationFactor
         self.horizontalDragThreshold = horizontalDragThreshold
         self.verticalDragThreshold = verticalDragThreshold
+        self.iMessageMediaStyle = iMessageMediaStyle
+        self.dragFixedHorizontally = dragFixedHorizontally
     }
 
     /// The visual direction of the stack.
@@ -77,6 +81,13 @@ public struct DeckViewConfiguration: Codable, Equatable {
 
     /// The number of points an item must be panned to be moved to the bottom of the deck.
     public var verticalDragThreshold: Double
+    
+    /// iMessage Horizontal Style
+    public var iMessageMediaStyle: Bool
+    
+    /// if the drag gesture only allows for horizontal movements on a fixed axis
+    public var dragFixedHorizontally: Bool
+    
 }
 
 public extension DeckViewConfiguration {

@@ -1,10 +1,16 @@
+//////////////////////////////////////////////////////////////////////////////////
 //
-//  DeckView.swift
-//  DeckKit
+//  SYMBIOSE
+//  Copyright 2023 Symbiose Technologies, Inc
+//  All Rights Reserved.
 //
-//  Created by Daniel Saidi on 2020-08-31.
-//  Copyright © 2020-2023 Daniel Saidi. All rights reserved.
+//  NOTICE: This software is proprietary information.
+//  Unauthorized use is prohibited.
 //
+// 
+// Created by: Ryan Mckinney on 6/13/23
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #if os(iOS) || os(macOS)
 import SwiftUI
@@ -18,7 +24,7 @@ import SwiftUI
  You can pass in a ``DeckViewConfiguration`` value to config
  how the deck should be presented.
  */
-public struct DeckView<ItemType: DeckItem, ItemView: View>: View {
+public struct DynamicDeckView<ItemType: DeckItem, ItemView: View>: View {
 
     /**
      Create a deck view with a standard view configuration.
@@ -66,7 +72,10 @@ public struct DeckView<ItemType: DeckItem, ItemView: View>: View {
         self.swipeUpAction = swipeUpAction
         self.swipeDownAction = swipeDownAction
         self.itemView = itemView
+        self._activeIndex = .init(wrappedValue: deck.wrappedValue.startingIdx)
     }
+    
+    @State var activeIndex: Int
     
     /**
      A function to trigger for a deck item swipe action.
@@ -112,23 +121,13 @@ public struct DeckView<ItemType: DeckItem, ItemView: View>: View {
             .gesture(dragGesture(for: item))
     }
     
-    @ViewBuilder func standardItemBuilder(_ item: ItemType) -> some View {
-        itemView(item)
-            .zIndex(zIndex(of: item))
-            .shadow(radius: 0.5)
-            .offset(size: dragOffset(for: item))
-            .scaleEffect(scale(of: item))
-            .offset(y: offset(of: item))
-            .rotationEffect(dragRotation(for: item) ?? .zero)
-            .gesture(dragGesture(for: item))
-    }
     
 }
 
 
 // MARK: - Properties
 
-private extension DeckView {
+private extension DynamicDeckView {
 
     var items: [ItemType] {
         deck.wrappedValue.items
@@ -136,19 +135,20 @@ private extension DeckView {
 
     var visibleItems: [ItemType] {
         let first = Array(items.prefix(config.itemDisplayCount))
-        guard
-            config.alwaysShowLastItem,
-            let last = items.last,
-            !first.contains(last)
-        else { return first }
-        return Array(first).dropLast() + [last]
+        return first
+//        guard
+//            config.alwaysShowLastItem,
+//            let last = items.last,
+//            !first.contains(last)
+//        else { return first }
+//        return Array(first).dropLast() + [last]
     }
 }
 
 
 // MARK: - Functions
 
-private extension DeckView {
+private extension DynamicDeckView {
 
     /**
      Move a certain item to the back of the stack.
@@ -163,12 +163,32 @@ private extension DeckView {
     func moveItemToFront(_ item: ItemType) {
         deck.wrappedValue.moveToFront(item)
     }
+    
+    func movePositionForward(from item: ItemType) {
+        guard let itemIdx = self.items.firstIndex(of: item) else { return }
+        if itemIdx == 0 {
+            self.activeIndex = self.items.count - 1
+        } else {
+            self.activeIndex -= 1
+        }
+    
+    }
+    
+    func movePositionBackward(from item: ItemType) {
+        guard let itemIdx = self.items.firstIndex(of: item) else { return }
+        if itemIdx == (self.items.count - 1) {
+            self.activeIndex = 0
+        } else {
+            self.activeIndex += 1
+        }
+        
+    }
 }
 
 
 // MARK: - View Logic
 
-private extension DeckView {
+private extension DynamicDeckView {
     
     func dragGesture(for item: ItemType) -> some Gesture {
         DragGesture()
@@ -182,9 +202,11 @@ private extension DeckView {
         topItemOffset = drag.translation
         withAnimation(.spring()) {
             if dragGestureIsPastThreshold(drag) {
-                moveItemToBack(item)
+                
+//                moveItemToBack(item)
             } else {
-                moveItemToFront(item)
+                
+//                moveItemToFront(item)
             }
         }
     }
@@ -258,9 +280,15 @@ private extension DeckView {
         visibleItems.firstIndex(of: item)
     }
     
-    func zIndex(of index: ItemType) -> Double {
-        guard let index = visibleIndex(of: index) else { return 0 }
-        return Double(visibleItems.count - index)
+    func zIndex(of item: ItemType) -> Double {
+        guard let itemIndex = self.items.firstIndex(of: item) else { return 0}
+        
+        let itemCount = self.items.count
+        
+        let itemDistanceToActive = abs(itemIndex - self.activeIndex)
+        
+        return Double(itemCount - itemDistanceToActive)
+        
     }
 }
 
@@ -281,7 +309,7 @@ private extension View {
 
 // MARK: - Preview
 
-struct DeckView_Previews: PreviewProvider {
+struct DynamicDeckView_Previews: PreviewProvider {
 
     struct Preview: View {
 

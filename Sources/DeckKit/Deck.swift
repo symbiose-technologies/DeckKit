@@ -25,10 +25,13 @@ public struct Deck<Item: DeckItem>: Identifiable, Equatable {
     public init(
         id: UUID = UUID(),
         name: String = "",
-        items: [Item]) {
+        items: [Item],
+        startingIdx: Int = 0
+    ) {
         self.id = id
         self.name = name
         self.items = items
+        self.startingIdx = startingIdx
     }
     
     /**
@@ -45,6 +48,12 @@ public struct Deck<Item: DeckItem>: Identifiable, Equatable {
      The items that are added to the deck.
      */
     public var items: [Item]
+    
+    /**
+     The index to display at the top, initially
+     */
+    public var startingIdx: Int
+    
 }
 
 public extension Deck {

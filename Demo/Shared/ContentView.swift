@@ -23,7 +23,7 @@ struct ContentView: View {
     @StateObject
     var animation = DeckShuffleAnimation()
     
-    var body: some View {
+    var bodyOG: some View {
         NavigationView {
             #if os(macOS)
             EmptyView()
@@ -43,10 +43,48 @@ struct ContentView: View {
             .background(background)
         }
     }
+    
+    var body: some View {
+        NavigationView {
+            #if os(macOS)
+            EmptyView()
+            #endif
+            VStack(spacing: 50) {
+                imessageDeckView.imessagePadding()
+                shuffleButton
+            }
+            
+            
+            .navigationTitle("DeckKit")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .padding()
+            .background(background)
+        }
+    }
+    
 }
 
 private extension ContentView {
 
+    var imessageDeckView: some View {
+        DynamicDeckView(
+            deck: $deck,
+            config: .init(
+                direction: .down,
+                itemDisplayCount: 8,
+                iMessageMediaStyle: true,
+                dragFixedHorizontally: true
+            ),
+            swipeLeftAction: { hobby in print("\(hobby.id) was swiped left") },
+            swipeRightAction: { hobby in print("\(hobby.id) was swiped left") },
+            swipeUpAction: { hobby in print("\(hobby.id) was swiped up") },
+            swipeDownAction: { hobby in print("\(hobby.id) was swiped down") },
+            itemView: card
+        )
+    }
+    
     var deckView: some View {
         DeckView(
             deck: $deck,
@@ -87,6 +125,12 @@ private extension ContentView {
 }
 
 extension View {
+    
+    func imessagePadding() -> some View {
+        self
+//            .padding(.bottom, 50)
+            .padding(EdgeInsets(top: 30, leading: 20, bottom: 30, trailing: 20))
+    }
     
     func withPlatformPadding() -> some View {
         #if os(macOS)
